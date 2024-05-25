@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DG.Tweening;
-using Reward;
 using UnityEngine;
 
 namespace Wheel
@@ -13,12 +13,16 @@ namespace Wheel
         [SerializeField] private float fullSpinsCount;
         [SerializeField] private float spinDuration;
         [SerializeField] private AnimationCurve easeCurve;
-        [SerializeField] private List<RewardBehaviour> winRewardPositions;
-        [SerializeField] private List<RewardBehaviour> rewardPositions;
+        [SerializeField] private List<Transform> winRewardPositions;
+        [SerializeField] private List<Transform> rewardPositions;
+
+        public List<Transform> RewardPositions => rewardPositions;
+
+        public event Action<Transform> SpinFinished;
 
         private Sequence _spinSequence;
-        private RewardBehaviour _currentWinReward;
-        private List<RewardBehaviour> _winRewardsList;
+        private Transform _currentWinReward;
+        private List<Transform> _winRewardsList;
 
         private void Awake() => 
             _winRewardsList = winRewardPositions;
@@ -33,10 +37,7 @@ namespace Wheel
             var totalSpinAngle = spinAngle - currentRotation;
 
             _spinSequence.Append(transform.DORotate(new Vector3(0f, 0f, -totalSpinAngle), spinDuration, RotateMode.FastBeyond360).SetEase(easeCurve))
-                .OnComplete(() =>
-                {
-                    reward.Enable(false);
-                });
+                .OnComplete(() => SpinFinished?.Invoke(reward));
             
             _spinSequence.Play();
         }
@@ -49,12 +50,12 @@ namespace Wheel
             return spinAngle;
         }
 
-        private RewardBehaviour GetReward()
+        private Transform GetReward()
         {
             if (_winRewardsList.Count == 0)
                 return rewardPositions[GetNextIndex()];
 
-            _currentWinReward = _winRewardsList[0];
+            _currentWinReward = _winRewardsList[0].transform;
             _winRewardsList.Remove(_currentWinReward);
             return _currentWinReward;
         }
