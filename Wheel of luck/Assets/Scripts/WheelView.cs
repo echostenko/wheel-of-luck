@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class WheelView : MonoBehaviour
 {
@@ -18,29 +18,32 @@ public class WheelView : MonoBehaviour
 
         private Sequence _spinSequence;
 
-        private void Awake()
-        {
+        private void Awake() => 
             spinButton.onClick.AddListener(Spin);
-        }
+
+        private void OnDestroy() => 
+            spinButton.onClick.RemoveListener(Spin);
 
         private void Spin()
         {
             _spinSequence = DOTween.Sequence();
 
-            var spinAngle = GetSpinAngle(1);
+            var spinAngle = GetSpinAngle(GetRandomRewardPosition());
 
             _spinSequence.Append(wheelTransform.DORotate(new Vector3(0f, 0f, -spinAngle), spinDuration, RotateMode.FastBeyond360).SetEase(easeCurve));
 
             _spinSequence.Play();
         }
 
-        private float GetSpinAngle(int rewardId)
+        private float GetSpinAngle(Vector3 rewardPosition)
         {
-            var rewardPosition = rewardPositions[rewardId].transform.position;
             var angleDifference = Quaternion.FromToRotation(Vector3.up, rewardPosition).eulerAngles.z;
             var chosenAngle = fullSpinsCount * FullSpinAngle + angleDifference;
             var spinAngle = Mathf.Round(chosenAngle / WheelAngleStep) * WheelAngleStep;
 
             return spinAngle;
         }
+
+        private Vector3 GetRandomRewardPosition() => 
+            rewardPositions.Count == 0 ? Vector3.zero : rewardPositions[Random.Range(0, rewardPositions.Count)].position;
 }
