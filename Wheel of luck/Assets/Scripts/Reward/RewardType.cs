@@ -3,6 +3,7 @@
     public enum RewardType
     {
         Gem,
+        Coin,
         Item
     }
 }

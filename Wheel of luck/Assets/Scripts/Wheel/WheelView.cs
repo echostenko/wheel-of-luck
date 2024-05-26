@@ -15,6 +15,7 @@ namespace Wheel
         private List<RewardBehaviour> _rewardBehaviours = new();
         private Dictionary<Transform, RewardBehaviour> _rewards = new ();
         private RewardBehaviour _rewardBehaviour;
+        private int _index;
 
         private void Awake()
         {
@@ -32,24 +33,35 @@ namespace Wheel
         private void OnSpinFinished(Transform rewardTransform)
         {
             var reward = _rewards[rewardTransform];
-            reward.UpdateReward(false);
-            reward.SetRewardType(RewardType.Item);
-            reward.UpdateReward(true);
+
+            if (_index >= rewardTypes.Count)
+                _index = 0;
+            
+            reward.UpdateReward(rewardTypes[_index]);
+            _index++;
+
+            ButtonInteractable(true);
         }
 
-        private void SpinWheel() => 
+        private void SpinWheel()
+        {
+            ButtonInteractable(false);
             spinController.Spin();
+        }
+
+        private void ButtonInteractable(bool interactable) => 
+            spinButton.interactable = interactable;
 
         private void SetRewards()
         {
-            var index = 0;
+            _index = 0;
             
             foreach (var rewardPosition in spinController.RewardPositions)
             {
-                _rewardBehaviour = RewardFactory.CreateReward(rewardPosition, rewardTypes[index]);
+                _rewardBehaviour = RewardFactory.CreateReward(rewardPosition, rewardTypes[_index]);
                 _rewards.Add(rewardPosition, _rewardBehaviour);
                 _rewardBehaviours.Add(_rewardBehaviour);
-                index++;
+                _index++;
             }
         }
     }

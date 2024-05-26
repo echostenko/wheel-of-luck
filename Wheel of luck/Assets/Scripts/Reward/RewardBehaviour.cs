@@ -7,7 +7,8 @@ namespace Reward
     public class RewardBehaviour : MonoBehaviour
     {
         private const string GemPath = "Gem";
-        private const string CrownPath = "Coin";
+        private const string CoinPath = "Coin";
+        private const string HatPath = "Hat";
         
         [SerializeField] private Image image;
         public RewardType RewardType { get; private set; }
@@ -20,21 +21,29 @@ namespace Reward
 
         private void SetImage()
         {
-            var x = Resources.Load<Sprite>(RewardType == RewardType.Gem ? GemPath : CrownPath);
-            image.sprite = x;
+            var path = RewardType switch
+            {
+                RewardType.Coin => CoinPath,
+                RewardType.Gem => GemPath,
+                _ => HatPath
+            };
+
+            var sprite = Resources.Load<Sprite>(path);
+            image.sprite = sprite;
         }
 
-        public void UpdateReward(bool isEnable)
+        public void UpdateReward(RewardType rewardType)
         {
-            if (isEnable)
-            {
-                image.color = new Color(image.color.r, image.color.g, image.color.b, 0f); 
-                image.DOFade(1f, 2f).SetDelay(1f);
-            }
-            else
-            {
-                image.DOFade(0f, 2f).SetDelay(1f);
-            }
+            StartFade(0, 2);
+            
+            RewardType = rewardType;
+            SetImage();
+
+            image.color = new Color(image.color.r, image.color.g, image.color.b, 0f);
+            StartFade(1, 2);
         }
+
+        private void StartFade(float endValue, float duration) => 
+            image.DOFade(endValue, duration).SetDelay(1f);
     }
 }
